@@ -1,10 +1,13 @@
-using System;
-using NUnit.Framework;
 using UnityEngine;
 
 public class StateManager : MonoBehaviour
 {
-    private static bool isSetting = false;
+    void Start()
+    {
+        isSetting = false;
+        canMoving = true;
+    }
+    private static bool isSetting;
     public static bool get_isSetting()
     {
         return isSetting;
@@ -14,7 +17,7 @@ public class StateManager : MonoBehaviour
         isSetting = set;
     }
 
-    private static bool canMoving = true;
+    private static bool canMoving;
 
     public static bool get_canMoving()
     {

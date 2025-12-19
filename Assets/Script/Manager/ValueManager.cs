@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class ValueManager : MonoBehaviour
 {
-    public static readonly Vector2 gridOrigin = new Vector2(-4.25f, -8.35f);
+    public static readonly Vector2 gridOrigin = new Vector2(-4f, -8.35f);
     public static readonly float cellSize = 2f;
 
     private static Vector2Int playerGridPos;

@@ -1,31 +1,71 @@
+using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class SnowBallMove : MonoBehaviour
 {
+    // 싱글톤 인스턴스
+    public static SnowBallMove Instance { get; private set; }
 
-    private static bool IsMovable = false;
+    private bool isMovable = false;
+    private int snowballCount = 0;
+    private List<GameObject> snowball1 = new List<GameObject>();
 
-    private static float temptime = 5;
+    [SerializeField] private GameObject SnowBall_P1; // Inspector에서 연결
 
-    void Update()
+    private void Awake()
     {
-        if (!IsMovable)
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
             return;
-        UpdateMove();
-
+        }
+        Instance = this;
     }
-    public static void start_move()
+    
+    private void Update()
     {
-        IsMovable = true;
-        temptime = 5;
+        if (!isMovable) return;
+        UpdateMove();
     }
+
+    // Snowball 생성
+    public void SpawnSnowball()
+    {
+        GameObject sb = Instantiate(SnowBall_P1);
+        snowball1.Add(sb);
+        snowballCount++;
+    }
+
+    // Snowball 제거
+    public void DestroySnowball(GameObject snowball, int num)
+    {
+        if (num == 1)
+        {
+            snowball1.Remove(snowball);
+        }
+        snowballCount--;
+        Destroy(snowball);
+    }
+
+    // 이동 시작
+    public void StartMove()
+    {
+        foreach (GameObject snowball in snowball1)
+        {
+            SnowBall1 sbScript = snowball.GetComponent<SnowBall1>();
+            if (sbScript != null)
+                sbScript.start_move();
+        }
+        isMovable = true;
+    }
+
+    // 이동 업데이트
     private void UpdateMove()
     {
-        Debug.Log(temptime);
-        temptime -= Time.deltaTime;
-        if (temptime <= 0)
+        if (snowballCount <= 0)
         {
-            IsMovable = false;
+            isMovable = false;
             StateManager.set_canMoving(true);
             LevelManager.NextLevel();
         }

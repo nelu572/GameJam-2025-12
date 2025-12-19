@@ -1,4 +1,5 @@
 using System.Data;
+using DG.Tweening;
 using UnityEngine;
 
 public class PlayerMove : MonoBehaviour
@@ -12,12 +13,11 @@ public class PlayerMove : MonoBehaviour
 
     private float y_offset;
 
-    private float 
     void Start()
     {
         y_offset = transform.localScale.y / 2;
 
-        ValueManager.SetPlayerGridPos(Vector2Int.zero);
+        ValueManager.SetPlayerGridPos(new Vector2Int(2, 2));
 
         Vector2 pos = ValueManager.GridToWorld(ValueManager.GetPlayerGridPos());
         transform.position = new Vector3(pos.x, pos.y + y_offset, 0);
@@ -35,16 +35,17 @@ public class PlayerMove : MonoBehaviour
         {
             Move(NextPos);
             ClearPreview();
+            reset_move();
         }
     }
 
     // 방향 토글 입력
     void HandleDirectionToggle()
     {
-        if (Input.GetKeyDown(KeyCode.W)) ToggleY(1);
-        if (Input.GetKeyDown(KeyCode.S)) ToggleY(-1);
-        if (Input.GetKeyDown(KeyCode.D)) ToggleX(1);
-        if (Input.GetKeyDown(KeyCode.A)) ToggleX(-1);
+        if (InputManager.GetKey(KeyCode.W)) ToggleY(1);
+        if (InputManager.GetKey(KeyCode.S)) ToggleY(-1);
+        if (InputManager.GetKey(KeyCode.D)) ToggleX(1);
+        if (InputManager.GetKey(KeyCode.A)) ToggleX(-1);
     }
 
     void ToggleX(int value)
@@ -77,7 +78,7 @@ public class PlayerMove : MonoBehaviour
         currentDir.y = currentDir.y + value;
     }
 
-    //다음 좌표 계산
+    // 다음 좌표 계산
     void UpdateNextPos()
     {
         if (currentDir == Vector2Int.zero)
@@ -115,19 +116,50 @@ public class PlayerMove : MonoBehaviour
     {
         hasStoredPos = false;
 
-        if (previewObject != null && previewObject.activeSelf)
+        if (previewObject.activeSelf)
             previewObject.SetActive(false);
     }
 
-    void Move(Vector2Int target)
+    // DOTween 점프 이동
+    public void Move(Vector2Int target)
+    {
+        ValueManager.SetPlayerGridPos(target);
+        float pos_y = transform.position.y + y_offset;
+        Vector2 targetPos = ValueManager.GridToWorld(target);
+        Vector3 endPos = new Vector3(targetPos.x, targetPos.y + y_offset, 0);
+
+        float jumpHeight = 1.5f;    // 점프 높이
+        float jumpDuration = 0.3f;  // 전체 이동 시간
+
+        // X축 이동 (직선)
+        transform.DOMoveX(endPos.x, jumpDuration).SetEase(Ease.Linear);
+
+        transform.DOMoveY((pos_y + endPos.y) / 2f + jumpHeight, jumpDuration / 2f)
+            .SetEase(Ease.OutQuad)
+            .OnComplete(() =>
+            {
+                transform.DOMoveY(endPos.y, jumpDuration / 2f)
+                    .SetEase(Ease.InQuad)
+                    .OnComplete(() =>
+                    {
+                        OnMoveComplete();
+                    });
+            });
+    }
+
+
+    // 이동 완료 후 실행
+    void OnMoveComplete()
+    {
+        SnowBallMove.Instance.StartMove();
+    }
+
+    public void reset_move()
     {
         StateManager.set_canMoving(false);
-
-        ValueManager.SetPlayerGridPos(target);
-        Vector2 pos = ValueManager.GridToWorld(target);
-        transform.position = new Vector3(pos.x, pos.y + y_offset, 0);
-
-        SnowBallMove.start_move();
+        ClearPreview();
+        currentDir = Vector2Int.zero;
+        hasStoredPos = false;
     }
 
     bool IsMovable(Vector2Int gridPos)
