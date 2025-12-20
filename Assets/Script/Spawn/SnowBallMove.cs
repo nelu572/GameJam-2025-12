@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class SnowBallMove : MonoBehaviour
@@ -10,6 +9,8 @@ public class SnowBallMove : MonoBehaviour
     private bool isMovable = false;
     private int snowballCount = 0;
     private List<GameObject> snowball1 = new List<GameObject>();
+
+    private HashSet<Vector2Int> usedSpawnPos = new HashSet<Vector2Int>();
 
     [SerializeField] private GameObject SnowBall_P1; // Inspector에서 연결
 
@@ -22,20 +23,67 @@ public class SnowBallMove : MonoBehaviour
         }
         Instance = this;
     }
-    
+
     private void Update()
     {
         if (!isMovable) return;
         UpdateMove();
     }
 
-    // Snowball 생성
     public void SpawnSnowball()
     {
-        GameObject sb = Instantiate(SnowBall_P1);
+        int amount = Random.Range(1, 5); // 1~4개
+
+
+
+        for (int i = 0; i < amount; i++)
+        {
+            Spawn_Snowball_n1();
+        }
+    }
+    private void Spawn_Snowball_n1()
+    {
+        int mapSize = ValueManager.get_mapSize();
+        int dir = Random.Range(0, 4); // 0~3 : 상하좌우
+        Vector2Int gridPos = Vector2Int.zero;
+        Quaternion rot = Quaternion.identity;
+
+        int mid = Random.Range(0, 5);
+
+        switch (dir)
+        {
+            case 0: // 위 → 아래를 바라봄
+                gridPos = new Vector2Int(mid, mapSize);
+                rot = Quaternion.Euler(0f, 0f, -90f);
+                break;
+
+            case 1: // 아래 → 위를 바라봄
+                gridPos = new Vector2Int(mid, -1);
+                rot = Quaternion.Euler(0f, 0f, 90f);
+                break;
+
+            case 2: // 왼쪽 → 오른쪽을 바라봄
+                gridPos = new Vector2Int(-1, mid);
+                rot = Quaternion.Euler(0f, 0f, 0f);
+                break;
+
+            case 3: // 오른쪽 → 왼쪽을 바라봄
+                gridPos = new Vector2Int(mapSize, mid);
+                rot = Quaternion.Euler(0f, 0f, 180f);
+                break;
+        }
+
+        Vector2 worldPos = ValueManager.GridToWorld(gridPos);
+        GameObject sb = Instantiate(SnowBall_P1, worldPos, rot);
+
+        SnowBall1 sn1 = sb.GetComponent<SnowBall1>();
+        sn1.set_Dir(dir);
+        sn1.set_gridPos(gridPos);
+
         snowball1.Add(sb);
         snowballCount++;
     }
+
 
     // Snowball 제거
     public void DestroySnowball(GameObject snowball, int num)

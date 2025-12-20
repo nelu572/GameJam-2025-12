@@ -1,4 +1,7 @@
+using Unity.VisualScripting;
+using UnityEditor.Rendering;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class PlayerValues : MonoBehaviour
 {
@@ -9,6 +12,12 @@ public class PlayerValues : MonoBehaviour
     {
         Move_TimeLimit = LevelManager.get_Move_TimeLimit();
     }
+
+    public static float get_Move_TimeLimit()
+    {
+        return Move_TimeLimit;
+    }
+
     void Start()
     {
         playermove = gameObject.GetComponent<PlayerMove>();
@@ -26,9 +35,23 @@ public class PlayerValues : MonoBehaviour
         }
     }
 
-
-    public static void onHit()
+    private static int dir;
+    public static void set_Dir(Vector2Int d)
     {
-        
+        if (d == Vector2Int.zero)
+        {
+            dir = 0;
+            return;
+        }
+        float angle = Mathf.Atan2(d.y, d.x) * Mathf.Rad2Deg;
+        angle = (angle + 450f) % 360f;
+
+        int index = Mathf.RoundToInt(angle / 45f) % 8;
+        dir = index + 1;
+    }
+
+    public static int get_Dir()
+    {
+        return dir;
     }
 }

@@ -15,7 +15,7 @@ public class PlayerMove : MonoBehaviour
 
     void Start()
     {
-        y_offset = transform.localScale.y / 2;
+        y_offset = transform.localScale.y / 2 + 0.20f;
 
         ValueManager.SetPlayerGridPos(new Vector2Int(2, 2));
 
@@ -30,6 +30,7 @@ public class PlayerMove : MonoBehaviour
 
         HandleDirectionToggle();
         UpdateNextPos();
+        PlayerValues.set_Dir(currentDir);
 
         if (hasStoredPos && InputManager.GetConfirmDown())
         {
@@ -37,6 +38,7 @@ public class PlayerMove : MonoBehaviour
             ClearPreview();
             reset_move();
         }
+
     }
 
     // 방향 토글 입력

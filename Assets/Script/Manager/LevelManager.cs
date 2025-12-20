@@ -1,4 +1,3 @@
-using NUnit.Framework;
 using UnityEngine;
 
 public class LevelManager : MonoBehaviour
@@ -6,7 +5,6 @@ public class LevelManager : MonoBehaviour
     void Start()
     {
         NextLevel();
-
     }
 
     public static int GetNowLevel()
@@ -25,10 +23,9 @@ public class LevelManager : MonoBehaviour
         nowLevel++;
         PlayerValues.reset_Move_TimeLimit();
         InputManager.SetAllKeyCooldown();
-        if (nowLevel == 1)
-            InputManager.SetKeyState(KeyCode.W, 5);
         SnowBallMove.Instance.SpawnSnowball();
-
+        UIManager.Update_MaxTimeLimit(Move_TimeLimit);
+        UIManager.Update_level(nowLevel);
     }
 
 
@@ -47,8 +44,10 @@ public class LevelManager : MonoBehaviour
     public static void set_Move_TimeLimit(float time)
     {
         Move_TimeLimit += time;
+
         if (Move_TimeLimit < min_Move_TimeLimit)
             Move_TimeLimit = min_Move_TimeLimit;
+        UIManager.Update_MaxTimeLimit(Move_TimeLimit);
     }
 
 }

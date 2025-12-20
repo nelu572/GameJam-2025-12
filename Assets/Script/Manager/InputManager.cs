@@ -67,9 +67,15 @@ public class InputManager : MonoBehaviour
         }
     }
 
-    // 확정 키 (Enter 고정)
+    // Enter키
     public static bool GetConfirmDown()
     {
         return Input.GetKeyDown(KeyCode.Return);
+    }
+
+    // Shift 고정
+    public static bool GetShiftDown()
+    {
+        return Input.GetKeyDown(KeyCode.RightShift) || Input.GetKeyDown(KeyCode.LeftShift);
     }
 }
