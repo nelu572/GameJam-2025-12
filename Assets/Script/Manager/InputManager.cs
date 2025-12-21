@@ -11,6 +11,8 @@ public class InputManager : MonoBehaviour
     // SetKeyState로 받은 원본 상태값
     private static Dictionary<KeyCode, int> keyStateRaw = new();
 
+    private static int locked_keys;
+
     void Start()
     {
         Reset();
@@ -20,6 +22,7 @@ public class InputManager : MonoBehaviour
     {
         keyState.Clear();
         keyStateRaw.Clear();
+        locked_keys = 0;
 
         if (keys == null) return;
 
@@ -51,8 +54,15 @@ public class InputManager : MonoBehaviour
     // 상태 설정
     public static void SetKeyState(KeyCode key, int state)
     {
-        keyState[key] = state;
-        keyStateRaw[key] = state;
+        if (keyState[key] != state)
+        {
+            if (state > 0)
+                locked_keys += 1;
+            else
+                locked_keys -= 1;
+            keyState[key] = state + 1;
+            keyStateRaw[key] = state;
+        }
     }
 
     // 모든 키 쿨다운 감소
@@ -63,8 +73,19 @@ public class InputManager : MonoBehaviour
         foreach (var key in keyList)
         {
             if (keyState[key] > 0)
+            {
                 keyState[key]--;
+                if (keyState[key] == 0)
+                {
+                    locked_keys -= 1;
+                }
+            }
         }
+    }
+
+    public static int GetLockedKeys()
+    {
+        return locked_keys;
     }
 
     // Enter키

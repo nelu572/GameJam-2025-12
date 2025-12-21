@@ -4,17 +4,7 @@ public class StateManager : MonoBehaviour
 {
     void Start()
     {
-        isSetting = false;
         canMoving = true;
-    }
-    private static bool isSetting;
-    public static bool get_isSetting()
-    {
-        return isSetting;
-    }
-    public static void set_isSetting(bool set)
-    {
-        isSetting = set;
     }
 
     private static bool canMoving;

@@ -30,7 +30,9 @@ public class PlayerValues : MonoBehaviour
         Move_TimeLimit -= Time.deltaTime;
         if (Move_TimeLimit <= 0)
         {
-            playermove.Move(ValueManager.GetPlayerGridPos());
+            PlayerHit.Instance.onHit(2);
+            SnowBallMove.Instance.StartMove();
+            playermove.ClearPreview();
             playermove.reset_move();
         }
     }

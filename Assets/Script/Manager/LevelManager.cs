@@ -2,8 +2,10 @@ using UnityEngine;
 
 public class LevelManager : MonoBehaviour
 {
+    private static MapManager mapManager;
     void Start()
     {
+        mapManager = gameObject.GetComponent<MapManager>();
         NextLevel();
     }
 
@@ -21,17 +23,12 @@ public class LevelManager : MonoBehaviour
     public static void NextLevel()
     {
         nowLevel++;
-        PlayerValues.reset_Move_TimeLimit();
         InputManager.SetAllKeyCooldown();
+        PlayerValues.reset_Move_TimeLimit();
         SnowBallMove.Instance.SpawnSnowball();
         UIManager.Update_MaxTimeLimit(Move_TimeLimit);
         UIManager.Update_level(nowLevel);
-    }
-
-
-    void Update()
-    {
-
+        mapManager.DecreaseAllPositiveStates();
     }
 
     private static float Move_TimeLimit = 7f;

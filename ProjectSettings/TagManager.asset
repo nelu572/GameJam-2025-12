@@ -41,14 +41,17 @@ TagManager:
   - name: BackGround
     uniqueID: 3892548055
     locked: 0
-  - name: Bullet
-    uniqueID: 50422835
-    locked: 0
   - name: UI
     uniqueID: 3955902661
     locked: 0
+  - name: BackBullet
+    uniqueID: 2897035985
+    locked: 0
   - name: Player
     uniqueID: 3009087707
+    locked: 0
+  - name: Bullet
+    uniqueID: 50422835
     locked: 0
   - name: Default
     uniqueID: 0

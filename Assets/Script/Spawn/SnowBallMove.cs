@@ -32,7 +32,7 @@ public class SnowBallMove : MonoBehaviour
 
     public void SpawnSnowball()
     {
-        int amount = Random.Range(1, 5); // 1~4개
+        int amount = Random.Range(2, 5);
 
 
 
@@ -41,10 +41,11 @@ public class SnowBallMove : MonoBehaviour
             Spawn_Snowball_n1();
         }
     }
+
     private void Spawn_Snowball_n1()
     {
         int mapSize = ValueManager.get_mapSize();
-        int dir = Random.Range(0, 4); // 0~3 : 상하좌우
+        int dir = Random.Range(0, 4);
         Vector2Int gridPos = Vector2Int.zero;
         Quaternion rot = Quaternion.identity;
 
@@ -52,22 +53,19 @@ public class SnowBallMove : MonoBehaviour
 
         switch (dir)
         {
-            case 0: // 위 → 아래를 바라봄
+            case 0:
                 gridPos = new Vector2Int(mid, mapSize);
                 rot = Quaternion.Euler(0f, 0f, -90f);
                 break;
-
-            case 1: // 아래 → 위를 바라봄
+            case 1:
                 gridPos = new Vector2Int(mid, -1);
                 rot = Quaternion.Euler(0f, 0f, 90f);
                 break;
-
-            case 2: // 왼쪽 → 오른쪽을 바라봄
+            case 2:
                 gridPos = new Vector2Int(-1, mid);
                 rot = Quaternion.Euler(0f, 0f, 0f);
                 break;
-
-            case 3: // 오른쪽 → 왼쪽을 바라봄
+            case 3:
                 gridPos = new Vector2Int(mapSize, mid);
                 rot = Quaternion.Euler(0f, 0f, 180f);
                 break;
@@ -117,5 +115,10 @@ public class SnowBallMove : MonoBehaviour
             StateManager.set_canMoving(true);
             LevelManager.NextLevel();
         }
+    }
+
+    public bool get_isMovable()
+    {
+        return isMovable;
     }
 }
