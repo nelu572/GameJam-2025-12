@@ -1,9 +1,6 @@
 using UnityEngine;
 using DG.Tweening;
 using System;
-using UnityEditor.Callbacks;
-using UnityEditor.ShaderGraph;
-using Unity.Mathematics;
 
 public class SnowBall1 : MonoBehaviour
 {
