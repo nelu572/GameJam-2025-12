@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 public class SnowBallMove : MonoBehaviour
@@ -27,12 +29,21 @@ public class SnowBallMove : MonoBehaviour
     private void Update()
     {
         if (!isMovable) return;
-        UpdateMove();
+
+        if (snowballCount <= 0)
+        {
+            isMovable = false;
+            StateManager.set_canMoving(true);
+            LevelManager.NextLevel();
+        }
     }
 
     public void SpawnSnowball()
     {
-        int amount = Random.Range(2, 5);
+        int plus = LevelManager.GetNowLevel() / 5;
+        if (plus > 5)
+            plus = 5;
+        int amount = UnityEngine.Random.Range(2 + plus, 5 + plus);
 
 
 
@@ -45,11 +56,11 @@ public class SnowBallMove : MonoBehaviour
     private void Spawn_Snowball_n1()
     {
         int mapSize = ValueManager.get_mapSize();
-        int dir = Random.Range(0, 4);
+        int dir = UnityEngine.Random.Range(0, 4);
         Vector2Int gridPos = Vector2Int.zero;
         Quaternion rot = Quaternion.identity;
 
-        int mid = Random.Range(0, 5);
+        int mid = UnityEngine.Random.Range(0, 5);
 
         switch (dir)
         {
@@ -86,6 +97,7 @@ public class SnowBallMove : MonoBehaviour
     // Snowball 제거
     public void DestroySnowball(GameObject snowball, int num)
     {
+        snowball.transform.DOKill();
         if (num == 1)
         {
             snowball1.Remove(snowball);
@@ -106,14 +118,20 @@ public class SnowBallMove : MonoBehaviour
         isMovable = true;
     }
 
-    // 이동 업데이트
-    private void UpdateMove()
+    // public void allDestroySnowBall()
+    // {
+    //     for (int i = 0; i < snowball1.Count; i++)
+    //     {
+    //         DestroySnowball(snowball1[0], 1);
+    //     }
+    // }
+
+    public void set_allSnowball_SortingLayer(String Layer)
     {
-        if (snowballCount <= 0)
+        foreach (GameObject snowball in snowball1)
         {
-            isMovable = false;
-            StateManager.set_canMoving(true);
-            LevelManager.NextLevel();
+            SnowBall1 sbScript = snowball.GetComponent<SnowBall1>();
+            sbScript.set_SortingLayer(Layer);
         }
     }
 

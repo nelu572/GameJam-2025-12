@@ -1,3 +1,4 @@
+using System.Data.Common;
 using UnityEngine;
 
 public class PlayerAnima : MonoBehaviour
@@ -14,12 +15,11 @@ public class PlayerAnima : MonoBehaviour
     [SerializeField] private Sprite downLeft;
 
     [SerializeField] private Sprite hit;
-    // [SerializeField] private Sprite die;
 
 
     private SpriteRenderer sr;
 
-    private float hit_Max_time = 1.0f;
+    private float hit_Max_time = 1.5f;
     private float hit_time;
 
     private int now_dir;
@@ -34,6 +34,7 @@ public class PlayerAnima : MonoBehaviour
 
     void Update()
     {
+        if (StateManager.get_isdie()) return;
         if (hit_time > 0)
         {
             sr.sprite = hit;
@@ -42,6 +43,7 @@ public class PlayerAnima : MonoBehaviour
             if (hit_time <= 0)
                 hit_time = 0;
 
+            prv_dir = -1;
             return;
         }
         now_dir = PlayerValues.get_Dir();
@@ -90,4 +92,10 @@ public class PlayerAnima : MonoBehaviour
     {
         return hit_time > 0;
     }
+    public void StartDieAnima()
+    {
+        sr.sprite = hit;
+        transform.eulerAngles = new Vector3(0, 0, 90);
+    }
+
 }

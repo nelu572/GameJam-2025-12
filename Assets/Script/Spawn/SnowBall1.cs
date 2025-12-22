@@ -1,5 +1,6 @@
 using UnityEngine;
 using DG.Tweening;
+using System;
 
 public class SnowBall1 : MonoBehaviour
 {
@@ -76,6 +77,12 @@ public class SnowBall1 : MonoBehaviour
         else
             sr.sortingLayerName = "Bullet";  // 플레이어 앞
     }
+
+    public void set_SortingLayer(String Layer)
+    {
+        sr.sortingLayerName = Layer;
+    }
+    
     private void Move(int i)
     {
         float pos_y = transform.position.y;
@@ -90,9 +97,7 @@ public class SnowBall1 : MonoBehaviour
                 {
                     if (i >= 5)
                     {
-                        transform.DOKill();
                         SnowBallMove.Instance.DestroySnowball(gameObject, 1);
-                        Destroy(gameObject);
                         return;
                     }
                     else

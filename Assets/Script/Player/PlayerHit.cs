@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerHit : MonoBehaviour
 {
@@ -53,9 +54,10 @@ public class PlayerHit : MonoBehaviour
             die();
         }
     }
-
     private void die()
     {
-        Debug.Log("님 뒤짐 ㅋ");
+        PlayerAnima.Instance.StartDieAnima();
+        SnowBallMove.Instance.set_allSnowball_SortingLayer("BackBullet");
+        StateManager.set_isdie(true);
     }
 }

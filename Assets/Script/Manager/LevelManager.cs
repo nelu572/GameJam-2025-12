@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LevelManager : MonoBehaviour
 {
@@ -9,6 +10,8 @@ public class LevelManager : MonoBehaviour
         NextLevel();
     }
 
+    private static int nowLevel = 0;
+
     public static int GetNowLevel()
     {
         return nowLevel;
@@ -18,10 +21,14 @@ public class LevelManager : MonoBehaviour
         nowLevel = level;
     }
 
-    private static int nowLevel = 0;
 
     public static void NextLevel()
     {
+        if (StateManager.get_isdie())
+        {
+            SceneManager.LoadScene("Ending Scene");
+            return;
+        }
         nowLevel++;
         InputManager.SetAllKeyCooldown();
         PlayerValues.reset_Move_TimeLimit();
@@ -29,10 +36,11 @@ public class LevelManager : MonoBehaviour
         UIManager.Update_MaxTimeLimit(Move_TimeLimit);
         UIManager.Update_level(nowLevel);
         mapManager.DecreaseAllPositiveStates();
+        set_Move_TimeLimit(-0.15f);
     }
 
-    private static float Move_TimeLimit = 7f;
-    private static float min_Move_TimeLimit = 0.3f;
+    private static float Move_TimeLimit = 4f;
+    private static float min_Move_TimeLimit = 1.25f;
 
     public static float get_Move_TimeLimit()
     {

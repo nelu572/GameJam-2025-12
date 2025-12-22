@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PlayerMove : MonoBehaviour
 {
+    public static PlayerMove Instance { get; private set; }
+
     [Header("이동 예정 위치 표시")]
     [SerializeField] private GameObject previewObject;
 
@@ -17,6 +19,11 @@ public class PlayerMove : MonoBehaviour
     private bool ice_skill = false;
 
     private float y_offset;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
 
     void Start()
     {
@@ -32,6 +39,7 @@ public class PlayerMove : MonoBehaviour
 
     void Update()
     {
+        if (StateManager.get_isdie()) return;
         if (!StateManager.get_canMoving()) return;
 
         if (ice_skill && InputManager.GetShiftDown())
