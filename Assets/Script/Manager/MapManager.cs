@@ -18,7 +18,7 @@ public class MapManager : MonoBehaviour
 
     private void InitMapData()
     {
-        for (int x = 0; x < SIZE; x++)
+        for (int x = 0; x < SIZE; x++)  
         {
             for (int y = 0; y < SIZE; y++)
             {

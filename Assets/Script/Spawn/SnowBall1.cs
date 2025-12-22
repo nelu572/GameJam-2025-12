@@ -50,7 +50,7 @@ public class SnowBall1 : MonoBehaviour
         gameObject.SetActive(true);
         sr.sprite = arrow;
         sr.color = new Color(1, 0, 0, 0.85f);
-        transform.position += transform.right * 0.65f;
+        transform.position += transform.right * 0.55f;
         transform.eulerAngles += new Vector3(0, 0, -90);
 
     }
