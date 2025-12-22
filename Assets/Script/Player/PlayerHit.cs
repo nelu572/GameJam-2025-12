@@ -17,7 +17,7 @@ public class PlayerHit : MonoBehaviour
         if (playerPos == snowballGridPos)
         {
             if (!PlayerAnima.Instance.get_ishitTime())
-                onHit(3);
+                onHit(5);
         }
     }
 

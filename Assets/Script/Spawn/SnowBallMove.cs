@@ -29,23 +29,34 @@ public class SnowBallMove : MonoBehaviour
     private void Update()
     {
         if (!isMovable) return;
-
         if (snowballCount <= 0)
         {
             isMovable = false;
-            StateManager.set_canMoving(true);
             LevelManager.NextLevel();
+        }
+    }
+    public void allSnowBallDrawMark()
+    {
+        foreach (GameObject snowball in snowball1)
+        {
+            SnowBall1 sbScript = snowball.GetComponent<SnowBall1>();
+            sbScript.drawMoveMark();
+        }
+    }
+    public void allSnowBallDeletedMark()
+    {
+        foreach (GameObject snowball in snowball1)
+        {
+            SnowBall1 sbScript = snowball.GetComponent<SnowBall1>();
+            sbScript.deleteMoveMark();
         }
     }
 
     public void SpawnSnowball()
     {
-        int plus = LevelManager.GetNowLevel() / 5;
-        if (plus > 5)
-            plus = 5;
-        int amount = UnityEngine.Random.Range(2 + plus, 5 + plus);
-
-
+        int min_plus = (int)MathF.Min((float)LevelManager.GetNowLevel() / 3.0f, 3.0f);
+        int max_plus = (int)MathF.Min((float)LevelManager.GetNowLevel() / 8.0f, 4.0f);
+        int amount = UnityEngine.Random.Range(2 + min_plus, 3 + max_plus);
 
         for (int i = 0; i < amount; i++)
         {
@@ -56,31 +67,47 @@ public class SnowBallMove : MonoBehaviour
     private void Spawn_Snowball_n1()
     {
         int mapSize = ValueManager.get_mapSize();
-        int dir = UnityEngine.Random.Range(0, 4);
+
         Vector2Int gridPos = Vector2Int.zero;
         Quaternion rot = Quaternion.identity;
+        int dir = 0;
 
-        int mid = UnityEngine.Random.Range(0, 5);
+        const int MAX_TRY = 20;
+        int tryCount = 0;
 
-        switch (dir)
+        // 중복되지 않은 위치 나올 때까지 재시도
+        do
         {
-            case 0:
-                gridPos = new Vector2Int(mid, mapSize);
-                rot = Quaternion.Euler(0f, 0f, -90f);
-                break;
-            case 1:
-                gridPos = new Vector2Int(mid, -1);
-                rot = Quaternion.Euler(0f, 0f, 90f);
-                break;
-            case 2:
-                gridPos = new Vector2Int(-1, mid);
-                rot = Quaternion.Euler(0f, 0f, 0f);
-                break;
-            case 3:
-                gridPos = new Vector2Int(mapSize, mid);
-                rot = Quaternion.Euler(0f, 0f, 180f);
-                break;
-        }
+            if (tryCount++ > MAX_TRY)
+                return; // 공간 없으면 그냥 포기
+
+            dir = UnityEngine.Random.Range(0, 4);
+            int mid = UnityEngine.Random.Range(0, 5);
+
+            switch (dir)
+            {
+                case 0:
+                    gridPos = new Vector2Int(mid, mapSize);
+                    rot = Quaternion.Euler(0f, 0f, -90f);
+                    break;
+                case 1:
+                    gridPos = new Vector2Int(mid, -1);
+                    rot = Quaternion.Euler(0f, 0f, 90f);
+                    break;
+                case 2:
+                    gridPos = new Vector2Int(-1, mid);
+                    rot = Quaternion.Euler(0f, 0f, 0f);
+                    break;
+                case 3:
+                    gridPos = new Vector2Int(mapSize, mid);
+                    rot = Quaternion.Euler(0f, 0f, 180f);
+                    break;
+            }
+
+        } while (usedSpawnPos.Contains(gridPos));
+
+        // 위치 사용 등록
+        usedSpawnPos.Add(gridPos);
 
         Vector2 worldPos = ValueManager.GridToWorld(gridPos);
         GameObject sb = Instantiate(SnowBall_P1, worldPos, rot);
@@ -94,14 +121,23 @@ public class SnowBallMove : MonoBehaviour
     }
 
 
+
     // Snowball 제거
     public void DestroySnowball(GameObject snowball, int num)
     {
+        SnowBall1 sb = snowball.GetComponent<SnowBall1>();
+        if (sb != null)
+        {
+            usedSpawnPos.Remove(sb.get_spawnGridPos()); // 위치 해제
+        }
+
         snowball.transform.DOKill();
+
         if (num == 1)
         {
             snowball1.Remove(snowball);
         }
+
         snowballCount--;
         Destroy(snowball);
     }

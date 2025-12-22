@@ -1,10 +1,12 @@
+using System;
 using UnityEngine;
 
 public class StateManager : MonoBehaviour
 {
     void Start()
     {
-        canMoving = true;
+        ismarking = true;
+        canMoving = false;
         isdie = false;
     }
 
@@ -17,6 +19,40 @@ public class StateManager : MonoBehaviour
     public static void set_canMoving(bool move)
     {
         canMoving = move;
+    }
+
+    private static bool ismarking;
+    private static float marking_time_MAX = 1.0f;
+    private static float marking_time = 1.0f;
+
+
+    public static bool get_ismarking()
+    {
+        return ismarking;
+    }
+    public static void StartMarking()
+    {
+        ismarking = true;
+        float minus = Math.Min((float)LevelManager.GetNowLevel() / 25, 0.5f);
+
+        marking_time = marking_time_MAX - minus;
+    }
+    public static void EndMarking()
+    {
+        ismarking = false;
+        LevelManager.move_select();
+    }
+    void Update()
+    {
+        if (ismarking)
+        {
+            marking_time -= Time.deltaTime;
+            if (marking_time <= 0)
+            {
+                marking_time = 0;
+                EndMarking();
+            }
+        }
     }
 
     private static bool isdie;

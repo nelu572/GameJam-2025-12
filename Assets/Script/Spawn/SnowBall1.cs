@@ -1,10 +1,18 @@
 using UnityEngine;
 using DG.Tweening;
 using System;
+using UnityEditor.Callbacks;
+using UnityEditor.ShaderGraph;
+using Unity.Mathematics;
 
 public class SnowBall1 : MonoBehaviour
 {
-    [SerializeField] private float duration = 0f;
+    [SerializeField] private float duration = 0.5f;
+
+    [SerializeField] private Sprite snowball;
+    [SerializeField] private Sprite arrow;
+
+    private Vector3 beforePos;
 
     private float jump_height = 1.5f;
     private Vector2Int gridPos;
@@ -14,34 +22,56 @@ public class SnowBall1 : MonoBehaviour
 
     private SpriteRenderer sr;
 
+    private Vector2Int spawnGridPos;
+
     void Awake()
     {
         sr = GetComponent<SpriteRenderer>(); // 추가
+        beforePos = transform.position;
     }
 
 
     void Start()
     {
+        float minus = Math.Min(LevelManager.GetNowLevel() / 50f, 0.25f);
+        duration -= minus;
         move = false;
-        Vector3 pos = transform.position;
-        transform.position = new Vector3(pos.x, pos.y, pos.z);
     }
 
     public void set_gridPos(Vector2Int pos)
     {
         gridPos = pos;
+        spawnGridPos = pos; // 최초 스폰 위치 저장
     }
-
     public void set_Dir(int dir)
     {
         this.dir = dir;
     }
+
+    public void drawMoveMark()
+    {
+        gameObject.SetActive(true);
+        sr.sprite = arrow;
+        sr.color = new Color(1, 0, 0, 0.85f);
+        transform.position += transform.right * 0.65f;
+        transform.eulerAngles += new Vector3(0, 0, -90);
+
+    }
+    public void deleteMoveMark()
+    {
+        gameObject.SetActive(false);
+        sr.sprite = snowball;
+        sr.color = Color.white;
+        transform.position = beforePos;
+    }
+
 
     public void start_move()
     {
         if (move)
             return;
 
+        gameObject.SetActive(true);
         move = true;
 
         Vector3 startPos = transform.position;
@@ -82,7 +112,7 @@ public class SnowBall1 : MonoBehaviour
     {
         sr.sortingLayerName = Layer;
     }
-    
+
     private void Move(int i)
     {
         float pos_y = transform.position.y;
@@ -113,5 +143,10 @@ public class SnowBall1 : MonoBehaviour
                             });
                     }
                 });
+    }
+
+    public Vector2Int get_spawnGridPos()
+    {
+        return spawnGridPos;
     }
 }

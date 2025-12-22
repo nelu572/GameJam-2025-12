@@ -46,6 +46,13 @@ public class PlayerAnima : MonoBehaviour
             prv_dir = -1;
             return;
         }
+        if (StateManager.get_ismarking())
+        {
+            sr.sprite = down;
+            return;
+        }
+
+
         now_dir = PlayerValues.get_Dir();
 
         if (now_dir != prv_dir)

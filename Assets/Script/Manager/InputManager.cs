@@ -60,8 +60,8 @@ public class InputManager : MonoBehaviour
                 locked_keys += 1;
             else
                 locked_keys -= 1;
-            keyState[key] = state + 1;
-            keyStateRaw[key] = state;
+            keyState[key] = state;
+            keyStateRaw[key] = state-1;
         }
     }
 

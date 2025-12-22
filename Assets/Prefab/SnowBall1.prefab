@@ -100,4 +100,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fa381c006faf64c449c4f42ae7f03706, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  duration: 0.6
+  duration: 0.5
+  snowball: {fileID: 6937817954938267909, guid: 1dbf90a5cbdc83d488f2931f10fb1ab1, type: 3}
+  arrow: {fileID: -765150924802650856, guid: a887bd7dcc2f4c14e9b941aa4a104fc7, type: 3}

@@ -31,28 +31,25 @@ public class LevelManager : MonoBehaviour
         }
         nowLevel++;
         InputManager.SetAllKeyCooldown();
-        PlayerValues.reset_Move_TimeLimit();
         SnowBallMove.Instance.SpawnSnowball();
-        UIManager.Update_MaxTimeLimit(Move_TimeLimit);
+        SnowBallMove.Instance.allSnowBallDrawMark();
         UIManager.Update_level(nowLevel);
         mapManager.DecreaseAllPositiveStates();
-        set_Move_TimeLimit(-0.15f);
+        StateManager.StartMarking();
+    }
+    public static void move_select()
+    {
+        StateManager.set_canMoving(true);
+        SnowBallMove.Instance.allSnowBallDeletedMark();
+        PlayerValues.reset_Move_TimeLimit();
+        UIManager.Update_MaxTimeLimit(Move_TimeLimit);
     }
 
-    private static float Move_TimeLimit = 4f;
-    private static float min_Move_TimeLimit = 1.25f;
+    private static float Move_TimeLimit = 3f;
 
     public static float get_Move_TimeLimit()
     {
         return Move_TimeLimit;
-    }
-    public static void set_Move_TimeLimit(float time)
-    {
-        Move_TimeLimit += time;
-
-        if (Move_TimeLimit < min_Move_TimeLimit)
-            Move_TimeLimit = min_Move_TimeLimit;
-        UIManager.Update_MaxTimeLimit(Move_TimeLimit);
     }
 
 }
