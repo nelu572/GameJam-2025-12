@@ -53,7 +53,7 @@ public class StateManager : MonoBehaviour
     public static void StartMarking()
     {
         ismarking = true;
-        float minus = Math.Min((float)LevelManager.GetNowLevel() / 25, 0.4f);
+        float minus = Math.Min((float)LevelManager.GetNowLevel() / 15, 0.25f);
 
         marking_time = marking_time_MAX - minus;
     }

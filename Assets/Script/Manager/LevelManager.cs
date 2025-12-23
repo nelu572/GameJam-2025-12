@@ -29,14 +29,11 @@ public class LevelManager : MonoBehaviour
 
     public static void NextLevel()
     {
-        if (StateManager.get_isdie())
-        {
-            SceneManager.LoadScene("Ending Scene");
-            return;
-        }
+        if (StateManager.get_isdie()) return;
+
         nowLevel++;
 
-        if (nowLevel % 5 == 0)
+        if (nowLevel % 4 == 0)
         {
             MapManager.Instance.SpawnTorch(nowLevel);
         }

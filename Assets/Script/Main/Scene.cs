@@ -1,4 +1,5 @@
 using System;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -13,6 +14,10 @@ public class Scene : MonoBehaviour
 
     private Image start_img;
     private Image exit_img;
+
+    [SerializeField] private Image image;
+    [SerializeField] private float duration = 0.5f;
+
     void Awake()
     {
         Cursor.lockState = CursorLockMode.Locked;
@@ -31,12 +36,18 @@ public class Scene : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.S))
         {
             if (now_state == "Start")
+            {
+                AudioManager.Instance.PlaydirSelect();
                 now_state = "Exit";
+            }
         }
         if (Input.GetKeyDown(KeyCode.W))
         {
             if (now_state == "Exit")
+            {
+                AudioManager.Instance.PlaydirSelect();
                 now_state = "Start";
+            }
         }
         if (now_state == "Start")
         {
@@ -52,13 +63,27 @@ public class Scene : MonoBehaviour
         {
             if (now_state == "Start")
             {
-                SceneManager.LoadScene("Game Scene");
+                StartGame();
             }
             if (now_state == "Exit")
             {
                 ExitGame();
             }
         }
+    }
+    private void StartGame()
+    {
+        AudioManager.Instance.PlaySelect();
+
+        image.DOKill();
+
+        image.DOFade(1f, duration)
+             .OnComplete(OnFadeComplete);
+
+    }
+    private void OnFadeComplete()
+    {
+        SceneManager.LoadScene("Game Scene");
     }
     public void ExitGame()
     {

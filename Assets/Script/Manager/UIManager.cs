@@ -34,15 +34,32 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI levelTXT;
 
-    private static int now_level = 0;
+    private static int now_level;
     private int prv_level = -1;
 
     [SerializeField] private TMP_Text countdownText;
 
+    [SerializeField] private Image fadeImage;
+    [SerializeField] private float fadeDuration;
+
     void Start()
     {
-        levelTXT.text = "1";
+        // 시작 시 화면을 완전히 가림
+        Color c = fadeImage.color;
+        c.a = 1f;
+        fadeImage.color = c;
 
+        fadeImage.DOKill();
+
+        // 페이드 인 (밝아짐)
+        fadeImage.DOFade(0f, fadeDuration)
+            .SetUpdate(true)
+            .OnComplete(counting);
+    }
+    
+    private void counting()
+    {
+        now_level = 1;
         Sequence seq = DOTween.Sequence();
 
         seq.AppendCallback(() => countdownText.text = "3");
@@ -72,14 +89,15 @@ public class UIManager : MonoBehaviour
         // 이동 제한 시간 슬라이더
         if (StateManager.get_canMoving())
         {
+            slider.gameObject.SetActive(true);
             slider.maxValue = max_value;
             slider.value = PlayerValues.get_Move_TimeLimit();
         }
         else
         {
+            slider.gameObject.SetActive(false);
             slider.value = 0;
         }
-
         // 웨이브 / 레벨 텍스트
         if (prv_level != now_level)
         {

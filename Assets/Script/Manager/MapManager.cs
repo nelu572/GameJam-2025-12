@@ -4,12 +4,25 @@ using UnityEngine.Tilemaps;
 
 public class MapManager : MonoBehaviour
 {
-
     public static MapManager Instance { get; private set; }
 
     [SerializeField] private Tilemap tilemap;
     [SerializeField] private TileBase snowTile;
     [SerializeField] private TileBase iceTile;
+    [SerializeField] private GameObject torchPrefab;
+
+    private const int SIZE = 5;
+    private int[,] mapData = new int[SIZE, SIZE];
+
+    [System.Serializable]
+    private class TorchData
+    {
+        public GameObject obj;
+        public Vector2Int pos;
+        public int spawnLevel;
+    }
+
+    private List<TorchData> torches = new List<TorchData>();
 
     private void Awake()
     {
@@ -20,15 +33,6 @@ public class MapManager : MonoBehaviour
         }
         Instance = this;
     }
-
-    private const int SIZE = 5;
-    private int[,] mapData = new int[SIZE, SIZE];
-
-    [SerializeField] private GameObject torchPrefab;
-
-    private GameObject currentTorch;
-    private int torchSpawnLevel;
-    private Vector2Int torchPos;
 
     void Start()
     {
@@ -55,18 +59,10 @@ public class MapManager : MonoBehaviour
         {
             for (int y = 0; y < SIZE; y++)
             {
-                Vector3Int pos = new Vector3Int(x, y, 0);
-                tilemap.SetTile(pos, mapData[x, y] == 0 ? snowTile : iceTile);
+                tilemap.SetTile(new Vector3Int(x, y, 0),
+                    mapData[x, y] == 0 ? snowTile : iceTile);
             }
         }
-    }
-
-    public void SetTileState(Vector2Int pos, int state)
-    {
-        if (!IsInBounds(pos)) return;
-
-        mapData[pos.x, pos.y] = state;
-        tilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), state == 0 ? snowTile : iceTile);
     }
 
     public int GetTileState(Vector2Int pos)
@@ -84,7 +80,7 @@ public class MapManager : MonoBehaviour
                 Vector2Int pos = center + new Vector2Int(dx, dy);
                 if (!IsInBounds(pos)) continue;
 
-                mapData[pos.x, pos.y] = 2; // ice
+                mapData[pos.x, pos.y] = 2;
                 tilemap.SetTile(new Vector3Int(pos.x, pos.y, 0), iceTile);
             }
         }
@@ -99,7 +95,6 @@ public class MapManager : MonoBehaviour
                 if (mapData[x, y] > 0)
                 {
                     mapData[x, y]--;
-
                     tilemap.SetTile(new Vector3Int(x, y, 0),
                         mapData[x, y] == 0 ? snowTile : iceTile);
                 }
@@ -107,58 +102,93 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public bool IsInBounds(Vector2Int pos)
-    {
-        return pos.x >= 0 && pos.x < SIZE && pos.y >= 0 && pos.y < SIZE;
-    }
+    // 횃불 생성 (5턴마다 LevelManager에서 호출)
     public void SpawnTorch(int currentLevel)
     {
-        if (currentTorch != null) return;
-
         Vector2Int playerPos = ValueManager.GetPlayerGridPos();
-        int mapSizeX = tilemap.size.x;
-        int mapSizeY = tilemap.size.y;
-
-        // 플레이어 주변 ±1 후보 수집 (플레이어 위치 제외)
         List<Vector2Int> candidates = new List<Vector2Int>();
+
+        // 플레이어 주변 +-1
         for (int dx = -1; dx <= 1; dx++)
         {
             for (int dy = -1; dy <= 1; dy++)
             {
-                if (dx == 0 && dy == 0) continue; // 플레이어 위치 제외
+                Vector2Int pos = playerPos + new Vector2Int(dx, dy);
 
-                int nx = playerPos.x + dx;
-                int ny = playerPos.y + dy;
+                // 플레이어 위치 제외
+                if (pos == playerPos)
+                    continue;
 
-                if (nx >= 0 && nx < mapSizeX && ny >= 0 && ny < mapSizeY)
-                {
-                    candidates.Add(new Vector2Int(nx, ny));
-                }
+                // 맵 범위 체크
+                if (!IsInBounds(pos))
+                    continue;
+
+                // 이미 횃불 있는 칸 제외
+                if (HasTorchAt(pos))
+                    continue;
+
+                candidates.Add(pos);
             }
         }
 
-        if (candidates.Count == 0) return; // 주변에 스폰할 공간 없으면 종료
+        // 생성할 수 있는 칸이 없으면 생성 안 함
+        if (candidates.Count == 0)
+            return;
 
-        Vector2Int pos = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+        Vector2Int spawnPos = candidates[Random.Range(0, candidates.Count)];
 
-        Vector3 worldPos = tilemap.CellToWorld(new Vector3Int(pos.x, pos.y, 0))
-                           + tilemap.cellSize / 2f;
+        Vector3 worldPos = tilemap.CellToWorld(
+            new Vector3Int(spawnPos.x, spawnPos.y, 0)
+        ) + tilemap.cellSize / 2f;
 
-        currentTorch = Instantiate(torchPrefab, worldPos, Quaternion.identity);
-        torchSpawnLevel = currentLevel;
-        torchPos = pos;
+        GameObject obj = Instantiate(torchPrefab, worldPos, Quaternion.identity);
+
+        torches.Add(new TorchData
+        {
+            obj = obj,
+            pos = spawnPos,
+            spawnLevel = currentLevel
+        });
+    }
+    private bool HasTorchAt(Vector2Int pos)
+    {
+        for (int i = 0; i < torches.Count; i++)
+        {
+            if (torches[i].pos == pos)
+                return true;
+        }
+        return false;
     }
 
+
+    // 7턴 지난 횃불 자동 삭제
     public void CheckTorchRemove(int currentLevel)
     {
-        if (currentTorch == null) return;
-
-        if (currentLevel - torchSpawnLevel >= 7)
+        for (int i = torches.Count - 1; i >= 0; i--)
         {
-            Destroy(currentTorch);
-            currentTorch = null;
+            if (currentLevel - torches[i].spawnLevel >= 7)
+            {
+                Destroy(torches[i].obj);
+                torches.RemoveAt(i);
+            }
         }
     }
+
+    // 플레이어가 밟은 횃불 제거
+    public bool TryPickupTorch(Vector2Int playerPos)
+    {
+        for (int i = 0; i < torches.Count; i++)
+        {
+            if (torches[i].pos == playerPos)
+            {
+                Destroy(torches[i].obj);
+                torches.RemoveAt(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
     private Vector2Int GetRandomPosition()
     {
         return new Vector2Int(
@@ -167,18 +197,8 @@ public class MapManager : MonoBehaviour
         );
     }
 
-    public Vector2Int GetTorchPosition()
+    public bool IsInBounds(Vector2Int pos)
     {
-        if (currentTorch == null)
-            return new Vector2Int(-1, -1);
-
-        return torchPos;
-    }
-    public void RemoveTorch()
-    {
-        if (currentTorch == null) return;
-
-        Destroy(currentTorch);
-        currentTorch = null;
+        return pos.x >= 0 && pos.x < SIZE && pos.y >= 0 && pos.y < SIZE;
     }
 }

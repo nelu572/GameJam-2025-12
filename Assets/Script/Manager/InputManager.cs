@@ -36,11 +36,18 @@ public class InputManager : MonoBehaviour
     // 이동 / 일반 키
     public static bool GetKey(KeyCode key)
     {
-        if (GetKeyState(key) != 0 && Input.GetKey(key))
+        if (GetKeyState(key) != 0 && Input.GetKeyDown(key))
         {
+            if (Input.GetKey(key))
+                AudioManager.Instance.Playfrozen();
             UIManager.Instance.cantMove(key);
         }
-        return GetKeyState(key) == 0 && Input.GetKeyDown(key);
+        if (GetKeyState(key) == 0 && Input.GetKeyDown(key))
+        {
+            AudioManager.Instance.PlaydirSelect();
+            return true;
+        }
+        return false;
     }
 
     // 현재 감소된 상태값

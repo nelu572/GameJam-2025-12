@@ -86,8 +86,8 @@ public class SnowBallMove : MonoBehaviour
         safeCell = candidates[UnityEngine.Random.Range(0, candidates.Count)];
 
         // 나머지 눈덩이 수 결정
-        int min_plus = (int)MathF.Min(LevelManager.GetNowLevel() / 3f, 3f);
-        int max_plus = (int)MathF.Min(LevelManager.GetNowLevel() / 8f, 4f);
+        int min_plus = (int)MathF.Min(LevelManager.GetNowLevel() / 3f, 4f);
+        int max_plus = (int)MathF.Min(LevelManager.GetNowLevel() / 8f, 5f);
         int amount = UnityEngine.Random.Range(2 + min_plus, 3 + max_plus) - InputManager.GetLockedKeys() / 2;
 
         for (int i = 0; i < amount; i++)
@@ -125,9 +125,30 @@ public class SnowBallMove : MonoBehaviour
             // 플레이어 경로 강제 생성
             if (!pathThroughPlayerCreated)
             {
-                // 플레이어 좌표를 통과할 경로로 강제 설정
-                if (dir == 0 || dir == 1) mid = playerPos.x;
-                if (dir == 2 || dir == 3) mid = playerPos.y;
+                bool playerOnYEdge = (playerPos.y == 0 || playerPos.y == mapSize - 1);
+                bool playerOnXEdge = (playerPos.x == 0 || playerPos.x == mapSize - 1);
+
+                if (playerOnYEdge)
+                {
+                    // 세로 방향만 허용 (위 / 아래)
+                    dir = UnityEngine.Random.Range(0, 2); // 0,1
+                    mid = playerPos.x;
+                }
+                else if (playerOnXEdge)
+                {
+                    // 가로 방향만 허용 (좌 / 우)
+                    dir = UnityEngine.Random.Range(2, 4); // 2,3
+                    mid = playerPos.y;
+                }
+                else
+                {
+                    // 모서리가 아니면 기존 랜덤 dir 유지
+                    if (dir == 0 || dir == 1)
+                        mid = playerPos.x;
+                    else
+                        mid = playerPos.y;
+                }
+
                 pathThroughPlayerCreated = true;
             }
 

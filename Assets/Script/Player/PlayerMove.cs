@@ -43,6 +43,7 @@ public class PlayerMove : MonoBehaviour
 
         if (ice_skill && InputManager.GetShiftDown())
         {
+            AudioManager.Instance.Playskill();
             ice_skill = false;
             Vector2Int playerPos = ValueManager.GetPlayerGridPos();
             MapManager.Instance.SetAround3x3Ice(playerPos);
@@ -131,6 +132,9 @@ public class PlayerMove : MonoBehaviour
 
     public void Move(Vector2Int target)
     {
+        AudioManager.Instance.Playjump();
+
+        Vector2Int prv_playerGridPos = ValueManager.GetPlayerGridPos();
         ValueManager.SetPlayerGridPos(target);
         float pos_y = transform.position.y + y_offset;
         Vector2 targetPos = ValueManager.GridToWorld(target);
@@ -148,45 +152,49 @@ public class PlayerMove : MonoBehaviour
                     .SetEase(Ease.InQuad)
                     .OnComplete(() =>
                     {
-                        OnMoveComplete();
+                        OnMoveComplete(prv_playerGridPos != ValueManager.GetPlayerGridPos());
                     });
             });
     }
 
-    void OnMoveComplete()
+    void OnMoveComplete(bool sliding)
     {
         Vector2Int currentPos = ValueManager.GetPlayerGridPos();
-
-        // 현재 밟고 있는 타일이 얼음이면 등속 이동
-        if (MapManager.Instance.GetTileState(currentPos) > 0)
+        checkTorch();
+        if (sliding)
         {
-            Vector2Int nextPos = currentPos + lastMoveDir;
-
-            if (!MapManager.Instance.IsInBounds(nextPos))
+            // 현재 밟고 있는 타일이 얼음이면 등속 이동
+            if (MapManager.Instance.GetTileState(currentPos) > 0)
             {
+                Vector2Int nextPos = currentPos + lastMoveDir;
+
+                if (!MapManager.Instance.IsInBounds(nextPos))
+                {
+                    endMove();
+                    return;
+                }
+
+                MoveIce(nextPos); // 등속 이동
                 return;
             }
-
-            MoveIce(nextPos); // 등속 이동
-            return;
         }
-
         // 일반 타일이면 멈춤
         endMove();
     }
-    private void endMove()
+    private void checkTorch()
     {
-        if (ValueManager.GetPlayerGridPos() == MapManager.Instance.GetTorchPosition())
+        if (MapManager.Instance.TryPickupTorch(ValueManager.GetPlayerGridPos()))
         {
             KeyCode key = InputManager.GetRandomLockedKey();
-
             if (key != KeyCode.None)
             {
-                InputManager.SetKeyState(key, 0); // 랜덤 키 해제
+                InputManager.SetKeyState(key, 0);
             }
-            MapManager.Instance.RemoveTorch();
         }
-
+    }
+    private void endMove()
+    {
+        checkTorch();
         SnowBallMove.Instance.StartMove();
     }
 
@@ -208,7 +216,7 @@ public class PlayerMove : MonoBehaviour
                 // 이동 완료 후 좌표 갱신
                 ValueManager.SetPlayerGridPos(target);
                 // 밟은 타일이 얼음이면 반복
-                OnMoveComplete();
+                OnMoveComplete(true);
             });
     }
 

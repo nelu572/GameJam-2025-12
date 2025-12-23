@@ -1,5 +1,7 @@
 using System.Data.Common;
+using DG.Tweening;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerAnima : MonoBehaviour
 {
@@ -103,6 +105,10 @@ public class PlayerAnima : MonoBehaviour
     {
         sr.sprite = hit;
         transform.eulerAngles = new Vector3(0, 0, 90);
+        DOVirtual.DelayedCall(0.75f, () =>
+        {
+            SceneManager.LoadScene("Ending Scene");
+        });
     }
 
 }
