@@ -36,6 +36,10 @@ public class InputManager : MonoBehaviour
     // 이동 / 일반 키
     public static bool GetKey(KeyCode key)
     {
+        if (GetKeyState(key) != 0 && Input.GetKey(key))
+        {
+            UIManager.Instance.cantMove(key);
+        }
         return GetKeyState(key) == 0 && Input.GetKeyDown(key);
     }
 
@@ -61,7 +65,7 @@ public class InputManager : MonoBehaviour
             else
                 locked_keys -= 1;
             keyState[key] = state;
-            keyStateRaw[key] = state-1;
+            keyStateRaw[key] = state - 1;
         }
     }
 
@@ -82,6 +86,24 @@ public class InputManager : MonoBehaviour
             }
         }
     }
+    public static KeyCode GetRandomLockedKey()
+    {
+        List<KeyCode> locked = new List<KeyCode>();
+
+        foreach (var pair in keyState)
+        {
+            if (pair.Value > 0) // 잠겨있는 키
+            {
+                locked.Add(pair.Key);
+            }
+        }
+
+        if (locked.Count == 0)
+            return KeyCode.None;
+
+        return locked[Random.Range(0, locked.Count)];
+    }
+
 
     public static int GetLockedKeys()
     {

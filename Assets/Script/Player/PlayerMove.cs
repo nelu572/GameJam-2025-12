@@ -9,8 +9,6 @@ public class PlayerMove : MonoBehaviour
     [Header("이동 예정 위치 표시")]
     [SerializeField] private GameObject previewObject;
 
-    [SerializeField] private MapManager mapManager;
-
     private Vector2Int currentDir = Vector2Int.zero;
     private Vector2Int NextPos;
     private Vector2Int lastMoveDir;
@@ -39,6 +37,7 @@ public class PlayerMove : MonoBehaviour
 
     void Update()
     {
+        if (StateManager.get_counting()) return;
         if (StateManager.get_isdie()) return;
         if (!StateManager.get_canMoving()) return;
 
@@ -46,7 +45,7 @@ public class PlayerMove : MonoBehaviour
         {
             ice_skill = false;
             Vector2Int playerPos = ValueManager.GetPlayerGridPos();
-            mapManager.SetAround3x3Ice(playerPos);
+            MapManager.Instance.SetAround3x3Ice(playerPos);
         }
 
         HandleDirectionToggle();
@@ -159,13 +158,12 @@ public class PlayerMove : MonoBehaviour
         Vector2Int currentPos = ValueManager.GetPlayerGridPos();
 
         // 현재 밟고 있는 타일이 얼음이면 등속 이동
-        if (mapManager.GetTileState(currentPos) > 0)
+        if (MapManager.Instance.GetTileState(currentPos) > 0)
         {
             Vector2Int nextPos = currentPos + lastMoveDir;
 
-            if (!mapManager.IsInBounds(nextPos))
+            if (!MapManager.Instance.IsInBounds(nextPos))
             {
-                SnowBallMove.Instance.StartMove();
                 return;
             }
 
@@ -174,8 +172,24 @@ public class PlayerMove : MonoBehaviour
         }
 
         // 일반 타일이면 멈춤
+        endMove();
+    }
+    private void endMove()
+    {
+        if (ValueManager.GetPlayerGridPos() == MapManager.Instance.GetTorchPosition())
+        {
+            KeyCode key = InputManager.GetRandomLockedKey();
+
+            if (key != KeyCode.None)
+            {
+                InputManager.SetKeyState(key, 0); // 랜덤 키 해제
+            }
+            MapManager.Instance.RemoveTorch();
+        }
+
         SnowBallMove.Instance.StartMove();
     }
+
 
     void MoveIce(Vector2Int target)
     {

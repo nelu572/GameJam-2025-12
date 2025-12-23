@@ -15,9 +15,11 @@ public class SnowBallMove : MonoBehaviour
     // 스폰 중복 방지
     private HashSet<Vector2Int> usedSpawnPos = new HashSet<Vector2Int>();
 
-    // 안전 행 / 열 (둘 중 하나만 사용)
-    private int reservedRow = -1;
-    private int reservedCol = -1;
+    // 안전 좌표 (플레이어 주변 ±2 범위 중 하나)
+    private Vector2Int safeCell = new Vector2Int(-100, -100);
+
+    // 플레이어 경로용
+    private bool pathThroughPlayerCreated = false;
 
     [SerializeField] private GameObject SnowBall_P1;
 
@@ -33,6 +35,7 @@ public class SnowBallMove : MonoBehaviour
 
     private void Update()
     {
+        if (StateManager.get_counting()) return;
         if (!isMovable) return;
 
         if (snowballCount <= 0)
@@ -62,50 +65,46 @@ public class SnowBallMove : MonoBehaviour
     public void SpawnSnowball()
     {
         usedSpawnPos.Clear();
-        reservedRow = -1;
-        reservedCol = -1;
+        pathThroughPlayerCreated = false;
 
         Vector2Int playerPos = ValueManager.GetPlayerGridPos();
+        int mapSize = ValueManager.get_mapSize();
 
-        // 안전 행 또는 열 하나 결정
-        bool reserveRowFlag = UnityEngine.Random.value < 0.5f;
-
-        if (reserveRowFlag)
+        // 주변 ±2 후보 수집 (플레이어 위치 제외)
+        List<Vector2Int> candidates = new List<Vector2Int>();
+        for (int dx = -2; dx <= 2; dx++)
         {
-            do
+            for (int dy = -2; dy <= 2; dy++)
             {
-                reservedRow = UnityEngine.Random.Range(0, 5);
-            } while (reservedRow == playerPos.y);
-        }
-        else
-        {
-            do
-            {
-                reservedCol = UnityEngine.Random.Range(0, 5);
-            } while (reservedCol == playerPos.x);
+                Vector2Int p = new Vector2Int(playerPos.x + dx, playerPos.y + dy);
+                if (p.x >= 0 && p.x < mapSize && p.y >= 0 && p.y < mapSize && p != playerPos)
+                    candidates.Add(p);
+            }
         }
 
+        // 안전 칸 하나 확정
+        safeCell = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+
+        // 나머지 눈덩이 수 결정
         int min_plus = (int)MathF.Min(LevelManager.GetNowLevel() / 3f, 3f);
         int max_plus = (int)MathF.Min(LevelManager.GetNowLevel() / 8f, 4f);
-        int amount = UnityEngine.Random.Range(2 + min_plus, 3 + max_plus);
+        int amount = UnityEngine.Random.Range(2 + min_plus, 3 + max_plus) - InputManager.GetLockedKeys() / 2;
 
         for (int i = 0; i < amount; i++)
         {
-            Spawn_Snowball_n1();
+            Spawn_Snowball_n1(mapSize, playerPos);
         }
     }
 
     // 개별 눈덩이 스폰
-    private void Spawn_Snowball_n1()
+    private void Spawn_Snowball_n1(int mapSize, Vector2Int playerPos)
     {
-        int mapSize = ValueManager.get_mapSize();
-
         Vector2Int gridPos;
         Quaternion rot;
         int dir;
         int mid;
 
-        const int MAX_TRY = 40;
+        const int MAX_TRY = 50;
         int tryCount = 0;
 
         while (true)
@@ -116,15 +115,20 @@ public class SnowBallMove : MonoBehaviour
             dir = UnityEngine.Random.Range(0, 4);
             mid = UnityEngine.Random.Range(0, 5);
 
-            if (reservedRow != -1)
+            // 안전 칸 보호
+            if ((dir == 0 || dir == 1) && mid == safeCell.x)
+                continue;
+
+            if ((dir == 2 || dir == 3) && mid == safeCell.y)
+                continue;
+
+            // 플레이어 경로 강제 생성
+            if (!pathThroughPlayerCreated)
             {
-                if ((dir == 2 || dir == 3) && mid == reservedRow)
-                    continue;
-            }
-            else if (reservedCol != -1)
-            {
-                if ((dir == 0 || dir == 1) && mid == reservedCol)
-                    continue;
+                // 플레이어 좌표를 통과할 경로로 강제 설정
+                if (dir == 0 || dir == 1) mid = playerPos.x;
+                if (dir == 2 || dir == 3) mid = playerPos.y;
+                pathThroughPlayerCreated = true;
             }
 
             switch (dir)

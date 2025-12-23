@@ -5,10 +5,30 @@ public class StateManager : MonoBehaviour
 {
     void Start()
     {
+        counting = true;
+        ismarking = false;
+        canMoving = false;
+        isdie = false;
+    }
+
+    public static void GameStart()
+    {
+        counting = false;
         ismarking = true;
         canMoving = false;
         isdie = false;
     }
+    private static bool counting;
+
+    public static bool get_counting()
+    {
+        return counting;
+    }
+    public static void set_counting(bool c)
+    {
+        counting = c;
+    }
+
 
     private static bool canMoving;
 

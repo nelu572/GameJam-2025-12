@@ -3,14 +3,19 @@ using UnityEngine.SceneManagement;
 
 public class LevelManager : MonoBehaviour
 {
-    private static MapManager mapManager;
-    void Start()
+
+    public static void GameStart()
     {
-        mapManager = gameObject.GetComponent<MapManager>();
         NextLevel();
+        StateManager.GameStart();
     }
 
-    private static int nowLevel = 0;
+
+    private static int nowLevel;
+    void Start()
+    {
+        nowLevel = 0;
+    }
 
     public static int GetNowLevel()
     {
@@ -30,11 +35,18 @@ public class LevelManager : MonoBehaviour
             return;
         }
         nowLevel++;
+
+        if (nowLevel % 5 == 0)
+        {
+            MapManager.Instance.SpawnTorch(nowLevel);
+        }
+        MapManager.Instance.CheckTorchRemove(nowLevel);
+
         InputManager.SetAllKeyCooldown();
         SnowBallMove.Instance.SpawnSnowball();
         SnowBallMove.Instance.allSnowBallDrawMark();
         UIManager.Update_level(nowLevel);
-        mapManager.DecreaseAllPositiveStates();
+        MapManager.Instance.DecreaseAllPositiveStates();
         StateManager.StartMarking();
     }
     public static void move_select()
